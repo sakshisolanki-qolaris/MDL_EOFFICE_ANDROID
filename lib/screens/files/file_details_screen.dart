@@ -144,16 +144,23 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
 
   String? _buildMinioUrl(String? path) {
     if (path == null || path.isEmpty || _minioBaseUrl == null) return null;
-    
-    // If it's already a full URL, just ensure the host is correct
-    if (path.startsWith('http')) {
-       // Replace localhost or 10.0.2.2 with the dynamically detected host
-       return path.replaceAll('localhost', '127.0.0.1').replaceAll('10.0.2.2', '127.0.0.1')
-                  .replaceAll('127.0.0.1', _minioBaseUrl!.contains('10.0.2.2') ? '10.0.2.2' : '127.0.0.1');
+
+    // If the path is already a full URL, return it
+    if (path.startsWith('http')) return path;
+
+    // Cleanup local dev IP replacements (only relevant for local testing)
+    String cleanPath = path;
+    if (_minioBaseUrl!.contains('127.0.0.1') || _minioBaseUrl!.contains('10.0.2.2')) {
+      cleanPath = path.replaceAll('localhost', '127.0.0.1')
+          .replaceAll('10.0.2.2', '127.0.0.1')
+          .replaceAll('127.0.0.1', _minioBaseUrl!.contains('10.0.2.2') ? '10.0.2.2' : '127.0.0.1');
     }
-    
-    return '$_minioBaseUrl/e-office-files/$path';
+
+    // Combine base URL, bucket, and cleaned path
+    return '$_minioBaseUrl/e-office-files/$cleanPath';
   }
+
+
 
 
   Future<void> _openAttachment(Map<String, dynamic> attachment) async {
