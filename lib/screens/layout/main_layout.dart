@@ -46,19 +46,26 @@ class MainLayout extends StatelessWidget {
               );
             },
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Center(
-              child: CircleAvatar(
-                backgroundColor: AppColors.teal50,
-                radius: 16,
-                child: Text(
-                    initial,
-                    style: const TextStyle(
-                        color: AppColors.teal600,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold
-                    )
+          GestureDetector(
+            onTap: () {
+              if (currentRoute != '/profile') {
+                Navigator.pushNamed(context, '/profile');
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Center(
+                child: CircleAvatar(
+                  backgroundColor: AppColors.teal50,
+                  radius: 16,
+                  child: Text(
+                      initial,
+                      style: const TextStyle(
+                          color: AppColors.teal600,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold
+                      )
+                  ),
                 ),
               ),
             ),

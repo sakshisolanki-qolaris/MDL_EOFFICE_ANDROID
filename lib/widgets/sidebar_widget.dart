@@ -101,23 +101,41 @@ class AppSidebar extends StatelessWidget {
               decoration: const BoxDecoration(color: AppColors.slate900, border: Border(top: BorderSide(color: AppColors.slate800))),
               child: Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: AppColors.slate800, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.slate500.withOpacity(0.2))),
-                    child: Row(
-                      children: [
-                        CircleAvatar(backgroundColor: AppColors.teal600, radius: 18, child: Text(initial, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(fullName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis),
-                              Text(designation, style: const TextStyle(color: AppColors.slate500, fontSize: 11), overflow: TextOverflow.ellipsis),
-                            ],
-                          ),
-                        )
-                      ],
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      if (currentRoute != '/profile') {
+                        Navigator.pushNamed(context, '/profile');
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                          color: AppColors.slate800,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.slate500.withOpacity(0.2))),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                              backgroundColor: AppColors.teal600,
+                              radius: 18,
+                              child: Text(initial, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(fullName,
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                    overflow: TextOverflow.ellipsis),
+                                Text(designation,
+                                    style: const TextStyle(color: AppColors.slate500, fontSize: 11),
+                                    overflow: TextOverflow.ellipsis),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),

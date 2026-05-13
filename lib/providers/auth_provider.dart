@@ -124,4 +124,35 @@ class AuthProvider extends ChangeNotifier {
     // Notify the app to kick the user back to the Login screen
     notifyListeners();
   }
-}
+
+  Future<Map<String, dynamic>> changePassword(String currentPassword, String newPassword) async {
+    try {
+      final response = await apiClient.changePassword({
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Password changed successfully',
+        };
+      }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'Failed to change password',
+      };
+    } on DioException catch (e) {
+      final errorMessage = e.response?.data['message'] ?? e.message;
+      return {
+        'success': false,
+        'message': errorMessage,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+      };
+    }
+  }
+}

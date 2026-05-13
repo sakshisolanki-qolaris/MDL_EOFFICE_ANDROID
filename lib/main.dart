@@ -21,6 +21,8 @@ import 'screens/search/search_screen.dart';
 import 'screens/users/manage_users_screen.dart';
 import 'screens/users/create_edit_user_screen.dart';
 import 'screens/files/drafts_screen.dart';
+import 'screens/profile/profile_screen.dart';
+
 import 'api/api_config.dart';
 import 'core/navigation/navigator_service.dart';
 
@@ -107,6 +109,7 @@ class EOfficeApp extends StatelessWidget {
         '/auth/set-pin': (context) => MainLayout(title: 'Set PIN', currentRoute: '/auth/set-pin', child: SetPinScreen()),
         '/users': (context) => const MainLayout(title: 'Manage Users', currentRoute: '/users', child: ManageUsersScreen()),
         '/users/create': (context) => const CreateEditUserScreen(), // Doesn't need sidebar layout
+        '/profile': (context) => const MainLayout(title: 'User Profile', currentRoute: '/profile', child: ProfileScreen()),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/users/edit') {
