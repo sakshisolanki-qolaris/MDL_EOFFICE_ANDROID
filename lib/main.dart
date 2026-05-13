@@ -22,8 +22,10 @@ import 'screens/users/manage_users_screen.dart';
 import 'screens/users/create_edit_user_screen.dart';
 import 'screens/files/drafts_screen.dart';
 import 'api/api_config.dart';
+import 'core/navigation/navigator_service.dart';
 
 void main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
 
   final baseUrl = await ApiConfig.getBaseUrl();
@@ -48,13 +50,16 @@ void main() async {
 }
 
 class EOfficeApp extends StatelessWidget {
+
   const EOfficeApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // 🟢 Notice we REMOVED the Consumer from wrapping the MaterialApp
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'eOffice Maharashtra Mandal',
+
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Roboto',

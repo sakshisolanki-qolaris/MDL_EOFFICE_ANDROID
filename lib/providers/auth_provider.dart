@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import '../api/api_client.dart';
+import '../core/navigation/navigator_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final ApiClient apiClient;
@@ -13,8 +14,11 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = true;
 
   AuthProvider({required this.apiClient, required this.secureStorage}) {
+    // 🟢 Setup global 401 Unauthorized handler
+    apiClient.onUnauthorized = logout;
     _checkAuthStatus();
   }
+
 
   bool get isAuthenticated => _isAuthenticated;
   Map<String, dynamic>? get user => _user;
@@ -111,6 +115,11 @@ class AuthProvider extends ChangeNotifier {
     await secureStorage.delete(key: 'jwt_token');
     _isAuthenticated = false;
     _user = null;
+
+    // 🟢 Force navigation to login and clear any existing screens on the stack
+    if (navigatorKey.currentState != null) {
+      navigatorKey.currentState!.pushNamedAndRemoveUntil('/login', (route) => false);
+    }
 
     // Notify the app to kick the user back to the Login screen
     notifyListeners();

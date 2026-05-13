@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class ApiClient {
   final Dio dio;
   final FlutterSecureStorage secureStorage;
+  Function? onUnauthorized;
 
   ApiClient({required this.dio, required this.secureStorage}) {
     dio.options.connectTimeout = const Duration(seconds: 15);
@@ -23,10 +24,12 @@ class ApiClient {
         // Handle 401 Unauthorized globally (except for set-pin / change-password loops)
         if (e.response?.statusCode == 401) {
           final path = e.requestOptions.path;
-          if (!path.contains('/auth/set-pin') && !path.contains('/auth/change-password')) {
-            print("401 Unauthorized detected. Clearing token.");
-            await secureStorage.delete(key: 'jwt_token');
-            // In UI layer, this will trigger a redirect to login
+          // Don't trigger auto-logout on login screen or PIN/Password setup screens
+          if (!path.contains('/auth/set-pin') && !path.contains('/auth/change-password') && !path.contains('/auth/login')) {
+            print("401 Unauthorized detected. Triggering logout.");
+            if (onUnauthorized != null) {
+              onUnauthorized!();
+            }
           }
         }
         return handler.next(e);
