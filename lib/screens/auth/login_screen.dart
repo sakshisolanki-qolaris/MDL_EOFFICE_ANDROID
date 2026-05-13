@@ -27,191 +27,223 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch the auth provider to show loading spinner on the button
     final isLoading = context.watch<AuthProvider>().isLoading;
 
-    // 🟢 ADDED: GestureDetector to unfocus the keyboard when tapping the background
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFE2E8F0), Color(0xFFCBD5E1)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+        backgroundColor: Colors.white,
+        body: Stack(
+          children: [
+            // Background Decorative Elements
+            Positioned(
+              top: -100,
+              right: -100,
               child: Container(
-                constraints: const BoxConstraints(maxWidth: 500),
+                width: 300,
+                height: 300,
                 decoration: BoxDecoration(
-                  color: AppColors.navyBackground,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, 10))
-                  ],
+                  shape: BoxShape.circle,
+                  color: AppColors.teal600.withOpacity(0.05),
                 ),
-                padding: const EdgeInsets.all(32),
-                child: Form(
-                  key: _formKey,
+              ),
+            ),
+            Positioned(
+              bottom: -50,
+              left: -50,
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.teal600.withOpacity(0.03),
+                ),
+              ),
+            ),
+
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo & Header
-                      Row(
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
+                      // --- LOGO SECTION ---
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 15, offset: const Offset(0, 5))
+                          ],
+                        ),
+                        child: Center(
+                          child: Container(
+                            width: 50,
+                            height: 50,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
-                                colors: [Colors.blue, Colors.cyanAccent],
+                                colors: [AppColors.teal600, Color(0xFF0D9488)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
                             ),
                             alignment: Alignment.center,
-                            child: const Text('eo', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                            child: const Icon(Icons.business_center_rounded, color: Colors.white, size: 28),
                           ),
-                          const SizedBox(width: 12),
-                          const Column(
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'e-Office',
+                        style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.slate900, letterSpacing: -0.5),
+                      ),
+                      const Text(
+                        'MAHARASHTRA MANDAL',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.teal600, letterSpacing: 2),
+                      ),
+                      const SizedBox(height: 48),
+
+                      // --- LOGIN CARD ---
+                      Container(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        padding: const EdgeInsets.all(32),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.grey.shade100),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10))
+                          ],
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('eOffice', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                              Text('DIGITAL WORKPLACE SOLUTION', style: TextStyle(color: Colors.blueAccent, fontSize: 10, letterSpacing: 1)),
+                              const Text(
+                                'Authorized Access',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.slate800),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Please sign in to your official account',
+                                style: TextStyle(fontSize: 13, color: AppColors.slate500),
+                              ),
+                              const SizedBox(height: 32),
+
+                              // Login ID Field
+                              TextFormField(
+                                controller: phoneController,
+                                keyboardType: TextInputType.phone,
+                                style: const TextStyle(color: AppColors.slate900),
+                                decoration: InputDecoration(
+                                  labelText: 'Login ID / Phone',
+                                  labelStyle: const TextStyle(fontSize: 14, color: AppColors.slate500),
+                                  prefixIcon: const Icon(Icons.person_outline, color: AppColors.teal600, size: 20),
+                                  filled: true,
+                                  fillColor: AppColors.slate50,
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.teal600, width: 1.5)),
+                                ),
+                                validator: (value) => (value == null || value.length != 10) ? 'Enter valid 10-digit ID' : null,
+                              ),
+                              const SizedBox(height: 20),
+
+                              // Password Field
+                              TextFormField(
+                                controller: passwordController,
+                                obscureText: _obscurePassword,
+                                style: const TextStyle(color: AppColors.slate900),
+                                decoration: InputDecoration(
+                                  labelText: 'Password',
+                                  labelStyle: const TextStyle(fontSize: 14, color: AppColors.slate500),
+                                  prefixIcon: const Icon(Icons.lock_outline, color: AppColors.teal600, size: 20),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.slate500, size: 20),
+                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  ),
+                                  filled: true,
+                                  fillColor: AppColors.slate50,
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.teal600, width: 1.5)),
+                                ),
+                                validator: (value) => (value == null || value.isEmpty) ? 'Password is required' : null,
+                              ),
+                              const SizedBox(height: 12),
+                              
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {},
+                                  child: const Text('Forgot Password?', style: TextStyle(color: AppColors.teal600, fontSize: 13, fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Login Button
+                              SizedBox(
+                                width: double.infinity,
+                                height: 56,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.teal600,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  onPressed: isLoading ? null : () async {
+                                    if (_formKey.currentState!.validate()) {
+                                      FocusScope.of(context).unfocus();
+                                      bool success = await Provider.of<AuthProvider>(context, listen: false).login(phoneController.text.trim(), passwordController.text.trim());
+                                      if (success && context.mounted) {
+                                        Navigator.pushReplacementNamed(context, '/inbox');
+                                      } else if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid credentials'), backgroundColor: Colors.redAccent));
+                                      }
+                                    }
+                                  },
+                                  child: isLoading
+                                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                      : const Text('Secure Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                ),
+                              ),
                             ],
-                          )
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Secure Login Title
-                      Container(
-                        padding: const EdgeInsets.only(left: 12),
-                        decoration: const BoxDecoration(
-                          border: Border(left: BorderSide(color: Colors.green, width: 4)),
-                        ),
-                        child: const Text('Secure Login', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Phone Input
-                      const Text('LOGIN ID / PHONE', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        controller: phoneController,
-                        style: const TextStyle(color: Colors.white),
-                        keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) return 'Phone number is required';
-                          if (value.length != 10) return 'Please enter a valid 10-digit number';
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: AppColors.navyInput,
-                          hintText: 'Enter 10-digit number',
-                          hintStyle: const TextStyle(color: Colors.white30),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.blueGrey)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.blue)),
-                          errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.redAccent)),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
-
-                      // Password Input
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      
+                      const SizedBox(height: 48),
+                      // --- FOOTER ---
+                      Column(
                         children: [
-                          const Text('PASSWORD', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
-                          TextButton(
-                            onPressed: () {},
-                            child: const Text('Forgot Password?', style: TextStyle(color: Colors.white, fontSize: 12)),
-                          )
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.security_rounded, size: 14, color: AppColors.slate500),
+                              SizedBox(width: 8),
+                              Text('256-bit AES Encrypted Session', style: TextStyle(color: AppColors.slate500, fontSize: 12)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text('Digital Workplace Solution for MM India', style: TextStyle(color: AppColors.slate500, fontSize: 10, letterSpacing: 0.5)),
                         ],
                       ),
-                      TextFormField(
-                        controller: passwordController,
-                        obscureText: _obscurePassword, // 🟢 Use the state variable
-                        style: const TextStyle(color: Colors.white),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) return 'Password is required';
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: AppColors.navyInput,
-                          hintText: 'Enter password',
-                          hintStyle: const TextStyle(color: Colors.white30),
-                          // 🟢 Added Suffix Icon
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                              color: Colors.white70,
-                            ),
-                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                          ),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.blueGrey)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.blue)),
-                          errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.redAccent)),
-                        ),
 
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Submit Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.green500,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          onPressed: isLoading ? null : () async {
-                            if (_formKey.currentState!.validate()) {
-                              FocusScope.of(context).unfocus();
-
-                              String phone = phoneController.text.trim();
-                              String password = passwordController.text.trim();
-
-                              bool success = await Provider.of<AuthProvider>(context, listen: false).login(phone, password);
-
-                              if (success) {
-                                if (context.mounted) {
-                                  Navigator.pushReplacementNamed(context, '/inbox');
-                                }
-                              } else {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Invalid credentials. Please check your details.'),
-                                      backgroundColor: Colors.redAccent,
-                                    ),
-                                  );
-                                }
-                              }
-                            }
-                          },
-                          child: isLoading
-                              ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                          )
-                              : const Text('Access System', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                        ),
-                      )
                     ],
                   ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
+
 }

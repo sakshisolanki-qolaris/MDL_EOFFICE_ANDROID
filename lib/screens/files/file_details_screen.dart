@@ -231,14 +231,17 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
             });
           }
 
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 24, right: 24, top: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Action File', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.slate800)),
-                const SizedBox(height: 16),
+          return Container(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Action File', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.slate800)),
+                  const SizedBox(height: 16),
+
 
                 TextField(
                     controller: _receiverSearchController,
@@ -401,10 +404,12 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
                   ),
                 ),
                 const SizedBox(height: 24),
-              ],
+                ],
+              ),
             ),
           );
         });
+
       },
     );
   }
