@@ -28,19 +28,43 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
   bool _isInit = false;
   String? _minioBaseUrl; // 🟢 Added to store dynamic host
   late TabController _tabController;
+  final ScrollController _timelineScrollController = ScrollController(); // 🟢 Added controller
+
 
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    
+    // 🟢 Listen for tab changes to trigger auto-scroll
+    _tabController.addListener(() {
+      if (_tabController.index == 1 && !_tabController.indexIsChanging) {
+        _scrollToBottom();
+      }
+    });
   }
+  
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_timelineScrollController.hasClients) {
+        _timelineScrollController.animateTo(
+          _timelineScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
 
   @override
   void dispose() {
     _tabController.dispose();
+    _timelineScrollController.dispose(); // 🟢 Dispose controller
     super.dispose();
   }
+
 
   @override
   void didChangeDependencies() {
@@ -100,7 +124,11 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
           }
           _isLoading = false;
         });
+        
+        // 🟢 Scroll after data is fetched and rendered
+        _scrollToBottom();
       }
+
     } on DioException catch (e) {
       print("History Error: ${e.message}");
       setState(() => _isLoading = false);
@@ -432,8 +460,10 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
 
           // --- TAB 2: COMPACT TIMELINE WITH INLINE ATTACHMENTS ---
           SingleChildScrollView(
+            controller: _timelineScrollController, // 🟢 Attach controller
             padding: const EdgeInsets.all(16),
             child: _history.isEmpty
+
                 ? const Center(child: Padding(padding: EdgeInsets.all(32.0), child: Text("No movement history yet.", style: TextStyle(color: AppColors.slate500))))
                 : ListView.builder(
               shrinkWrap: true,
