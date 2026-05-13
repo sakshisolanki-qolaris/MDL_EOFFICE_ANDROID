@@ -6,10 +6,9 @@ class ApiClient {
   final FlutterSecureStorage secureStorage;
 
   ApiClient({required this.dio, required this.secureStorage}) {
-    // Base URL for Android Emulator pointing to local Node.js server
-    dio.options.baseUrl = 'http://10.0.2.2:4000/api/v1';
     dio.options.connectTimeout = const Duration(seconds: 15);
     dio.options.receiveTimeout = const Duration(seconds: 15);
+
 
     // Setup Interceptors (Matches React axios interceptor)
     dio.interceptors.add(InterceptorsWrapper(

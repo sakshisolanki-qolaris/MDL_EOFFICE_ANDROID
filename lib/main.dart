@@ -21,12 +21,16 @@ import 'screens/search/search_screen.dart';
 import 'screens/users/manage_users_screen.dart';
 import 'screens/users/create_edit_user_screen.dart';
 import 'screens/files/drafts_screen.dart';
-void main() {
+import 'api/api_config.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final dio = Dio();
+  final baseUrl = await ApiConfig.getBaseUrl();
+  final dio = Dio(BaseOptions(baseUrl: baseUrl));
   const secureStorage = FlutterSecureStorage();
   final apiClient = ApiClient(dio: dio, secureStorage: secureStorage);
+
 
   runApp(
     MultiProvider(

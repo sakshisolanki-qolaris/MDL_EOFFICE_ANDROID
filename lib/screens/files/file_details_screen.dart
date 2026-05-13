@@ -9,6 +9,8 @@ import 'package:file_picker/file_picker.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
+import '../../api/api_config.dart';
+
 
 class FileDetailsScreen extends StatefulWidget {
   @override
@@ -24,7 +26,9 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
   int _fileId = 0;
   bool _isReadOnly = false;
   bool _isInit = false;
+  String? _minioBaseUrl; // 🟢 Added to store dynamic host
   late TabController _tabController;
+
 
   @override
   void initState() {
@@ -47,12 +51,19 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
         _fileData = Map<String, dynamic>.from(args);
         _fileId = _fileData['id'] ?? _fileData['fileId'] ?? 0;
         _isReadOnly = _fileData['isReadOnly'] ?? false;
+        
+        // 🟢 Fetch MinIO Base URL once
+        ApiConfig.getMinioUrl().then((url) {
+          if (mounted) setState(() => _minioBaseUrl = url);
+        });
+
         if (_fileId != 0) {
           _fetchFileHistory();
         } else {
           setState(() => _isLoading = false);
         }
       } else {
+
         setState(() => _isLoading = false);
       }
       _isInit = true;
@@ -104,10 +115,18 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
   }
 
   String? _buildMinioUrl(String? path) {
-    if (path == null || path.isEmpty) return null;
-    if (path.startsWith('http')) return path.replaceAll('localhost', '10.0.2.2');
-    return 'http://10.0.2.2:9000/e-office-files/$path';
+    if (path == null || path.isEmpty || _minioBaseUrl == null) return null;
+    
+    // If it's already a full URL, just ensure the host is correct
+    if (path.startsWith('http')) {
+       // Replace localhost or 10.0.2.2 with the dynamically detected host
+       return path.replaceAll('localhost', '127.0.0.1').replaceAll('10.0.2.2', '127.0.0.1')
+                  .replaceAll('127.0.0.1', _minioBaseUrl!.contains('10.0.2.2') ? '10.0.2.2' : '127.0.0.1');
+    }
+    
+    return '$_minioBaseUrl/e-office-files/$path';
   }
+
 
   Future<void> _openAttachment(Map<String, dynamic> attachment) async {
     final attachmentId = attachment['id'];
@@ -139,6 +158,8 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
     final _receiverSearchController = TextEditingController();
 
     bool _isSubmitting = false;
+    bool _obscurePin = true; // 🟢 Added state for visibility
+
 
     // 🟢 NEW: List to hold multiple files
     List<PlatformFile> _selectedFiles = [];
@@ -292,7 +313,21 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
                 ),
                 const SizedBox(height: 16),
 
-                TextField(controller: _pinController, obscureText: true, maxLength: 4, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Enter 4-Digit PIN to Sign', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)))),
+                TextField(
+                    controller: _pinController,
+                    obscureText: _obscurePin,
+                    maxLength: 4,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                        labelText: 'Enter 4-Digit PIN to Sign',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscurePin ? Icons.visibility_off : Icons.visibility, color: AppColors.slate500),
+                          onPressed: () => setModalState(() => _obscurePin = !_obscurePin),
+                        )
+                    )
+                ),
+
                 const SizedBox(height: 24),
 
                 SizedBox(
@@ -443,31 +478,52 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(senderName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.slate800)),
-                                        Text('→ $receiverName', style: const TextStyle(fontSize: 12, color: AppColors.slate500)),
+                                        Text(senderName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.slate800)),
+                                        Text('→ $receiverName', style: TextStyle(fontSize: 12, color: AppColors.slate500)),
                                       ],
                                     ),
                                   ),
-                                  if (fullSignatureUrl != null)
-                                    Container(
-                                      height: 35, width: 80,
-                                      alignment: Alignment.topRight,
-                                      child: Image.network(
-                                          fullSignatureUrl,
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (context, error, stackTrace) => const Text('[No Sig]', style: TextStyle(fontSize: 10, color: Colors.redAccent))
-                                      ),
-                                    )
+                                  if (move['date'] != null)
+                                    Text(
+                                      move['date'].toString().replaceAll(',', '\n'),
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(fontSize: 9, color: AppColors.slate500, fontWeight: FontWeight.bold),
+                                    ),
+
+
                                 ],
                               ),
 
                               if (move['remarks'] != null && move['remarks'].toString().isNotEmpty)
-                                Container(
-                                    width: double.infinity,
-                                    margin: const EdgeInsets.only(top: 6),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade200)),
-                                    child: Text('"${move['remarks']}"', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey.shade700, fontSize: 13))
+                                Stack(
+                                  children: [
+                                    Container(
+                                        width: double.infinity,
+                                        margin: const EdgeInsets.only(top: 8),
+                                        padding: const EdgeInsets.only(left: 12, right: 12, top: 10, bottom: 25), // Extra bottom padding for signature
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: Colors.grey.shade200),
+                                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2))]
+                                        ),
+
+                                        child: Text('"${move['remarks']}"', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey.shade700, fontSize: 13))
+                                    ),
+                                    if (fullSignatureUrl != null)
+                                      Positioned(
+                                        bottom: 2,
+                                        right: 8,
+                                        child: SizedBox(
+                                          height: 35, width: 80,
+                                          child: Image.network(
+                                              fullSignatureUrl,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (context, error, stackTrace) => const Text('[No Sig]', style: TextStyle(fontSize: 9, color: Colors.redAccent))
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
 
                               if (moveAttachments.isNotEmpty)
@@ -533,7 +589,7 @@ class _FileDetailsScreenState extends State<FileDetailsScreen> with SingleTicker
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.picture_as_pdf, color: Colors.redAccent)),
-                    title: Text(fileName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.slate800)),
+                    title: Text(fileName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.slate800)),
                     subtitle: const Text('Tap to download & view', style: TextStyle(fontSize: 12)),
                     trailing: IconButton(icon: const Icon(Icons.download_rounded, color: AppColors.teal600), onPressed: () => _openAttachment(attachment)),
                     onTap: () => _openAttachment(attachment),

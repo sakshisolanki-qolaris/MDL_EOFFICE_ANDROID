@@ -19,6 +19,8 @@ class _CreateEditUserScreenState extends State<CreateEditUserScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = true;
   bool _isSubmitting = false;
+  bool _obscurePassword = true; // 🟢 Added state for visibility
+
 
   List<dynamic> _departments = [];
   List<dynamic> _designations = [];
@@ -203,12 +205,17 @@ class _CreateEditUserScreenState extends State<CreateEditUserScreen> {
 
               if (!_isEditMode) ...[
                 TextFormField(
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'Password',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppColors.slate500),
+                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    ),
                     helperText: '8-16 chars, 1 Uppercase, 1 Number, 1 Special Char',
                   ),
+
                   validator: (val) {
                     if (val == null || val.isEmpty) return 'Password is required';
                     if (!RegExp(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])(?!.*\s).{8,16}$").hasMatch(val)) {

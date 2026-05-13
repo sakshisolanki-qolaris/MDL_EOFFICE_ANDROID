@@ -14,6 +14,8 @@ class _LoginScreenState extends State<LoginScreen> {
   // 1. Create Controllers to read the text input
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _obscurePassword = true; // 🟢 Added state for visibility
+
 
   @override
   void dispose() {
@@ -132,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       TextFormField(
                         controller: passwordController,
-                        obscureText: true,
+                        obscureText: _obscurePassword, // 🟢 Use the state variable
                         style: const TextStyle(color: Colors.white),
                         validator: (value) {
                           if (value == null || value.isEmpty) return 'Password is required';
@@ -143,10 +145,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           fillColor: AppColors.navyInput,
                           hintText: 'Enter password',
                           hintStyle: const TextStyle(color: Colors.white30),
+                          // 🟢 Added Suffix Icon
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                              color: Colors.white70,
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
                           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.blueGrey)),
                           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.blue)),
                           errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.redAccent)),
                         ),
+
                       ),
                       const SizedBox(height: 32),
 
