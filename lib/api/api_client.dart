@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../core/utils/logger_service.dart';
 
 class ApiClient {
   final Dio dio;
@@ -26,7 +27,7 @@ class ApiClient {
           final path = e.requestOptions.path;
           // Don't trigger auto-logout on login screen or PIN/Password setup screens
           if (!path.contains('/auth/set-pin') && !path.contains('/auth/change-password') && !path.contains('/auth/login')) {
-            print("401 Unauthorized detected. Triggering logout.");
+            AppLogger.warning("401 Unauthorized detected. Triggering logout.");
             if (onUnauthorized != null) {
               onUnauthorized!();
             }

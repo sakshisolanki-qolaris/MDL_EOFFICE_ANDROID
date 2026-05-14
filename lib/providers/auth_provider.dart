@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import '../api/api_client.dart';
 import '../core/navigation/navigator_service.dart';
+import '../core/utils/logger_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final ApiClient apiClient;
@@ -43,14 +44,14 @@ class AuthProvider extends ChangeNotifier {
           _user = response.data['data']['user'] ?? response.data['data'];
 
           _isAuthenticated = true;
-          print("User restored successfully: ${_user?['fullName']}");
+          AppLogger.info("User restored successfully: ${_user?['fullName']}");
         }
       } on DioException catch (e) {
         // If the token is expired or invalid (e.g., 401 Unauthorized)
-        print("Token invalid or expired: ${e.message}. Forcing logout.");
+        AppLogger.warning("Token invalid or expired: ${e.message}. Forcing logout.");
         await logout();
       } catch (e) {
-        print("Unknown error during auth check: $e");
+        AppLogger.error("Unknown error during auth check: $e");
         await logout();
       }
     }
@@ -100,10 +101,10 @@ class AuthProvider extends ChangeNotifier {
       } else {
         _authError = e.response?.data['message'] ?? e.response?.data?.toString() ?? e.message ?? "Authentication failed";
       }
-      print('Login Error: $_authError');
+      AppLogger.error('Login Error: $_authError');
     } catch (e) {
       _authError = "An unexpected error occurred. Please try again.";
-      print('Unexpected App Error: $e');
+      AppLogger.error('Unexpected App Error: $e');
     }
 
     _isAuthLoading = false;
@@ -118,7 +119,7 @@ class AuthProvider extends ChangeNotifier {
       // Hit the backend to blacklist the token in Redis
       await apiClient.logout();
     } catch (e) {
-      print("Backend logout failed (token might already be expired), clearing local data anyway.");
+      AppLogger.warning("Backend logout failed (token might already be expired), clearing local data anyway.");
     }
 
     // Wipe local storage
