@@ -27,7 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = context.watch<AuthProvider>().isLoading;
+    final authProvider = context.watch<AuthProvider>();
+    final isAuthLoading = authProvider.isAuthLoading;
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -138,6 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               // Login ID Field
                               TextFormField(
                                 controller: phoneController,
+                                enabled: !isAuthLoading,
                                 keyboardType: TextInputType.phone,
                                 style: const TextStyle(color: AppColors.slate900),
                                 decoration: InputDecoration(
@@ -145,10 +147,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                   labelStyle: const TextStyle(fontSize: 14, color: AppColors.slate500),
                                   prefixIcon: const Icon(Icons.person_outline, color: AppColors.teal600, size: 20),
                                   filled: true,
-                                  fillColor: AppColors.slate50,
+                                  fillColor: isAuthLoading ? AppColors.slate100 : AppColors.slate50,
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.teal600, width: 1.5)),
+                                  disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                 ),
                                 validator: (value) => (value == null || value.length != 10) ? 'Enter valid 10-digit ID' : null,
                               ),
@@ -157,6 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               // Password Field
                               TextFormField(
                                 controller: passwordController,
+                                enabled: !isAuthLoading,
                                 obscureText: _obscurePassword,
                                 style: const TextStyle(color: AppColors.slate900),
                                 decoration: InputDecoration(
@@ -165,13 +169,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   prefixIcon: const Icon(Icons.lock_outline, color: AppColors.teal600, size: 20),
                                   suffixIcon: IconButton(
                                     icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.slate500, size: 20),
-                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                    onPressed: isAuthLoading ? null : () => setState(() => _obscurePassword = !_obscurePassword),
                                   ),
                                   filled: true,
-                                  fillColor: AppColors.slate50,
+                                  fillColor: isAuthLoading ? AppColors.slate100 : AppColors.slate50,
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.teal600, width: 1.5)),
+                                  disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                 ),
                                 validator: (value) => (value == null || value.isEmpty) ? 'Password is required' : null,
                               ),
@@ -180,8 +185,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
-                                  onPressed: () {},
-                                  child: const Text('Forgot Password?', style: TextStyle(color: AppColors.teal600, fontSize: 13, fontWeight: FontWeight.bold)),
+                                  onPressed: isAuthLoading ? null : () => Navigator.pushNamed(context, '/auth/forgot-password'),
+                                  child: Text('Forgot Password?', style: TextStyle(color: isAuthLoading ? AppColors.slate400 : AppColors.teal600, fontSize: 13, fontWeight: FontWeight.bold)),
                                 ),
                               ),
                               const SizedBox(height: 24),
@@ -197,18 +202,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                     elevation: 0,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
-                                  onPressed: isLoading ? null : () async {
+                                  onPressed: isAuthLoading ? null : () async {
                                     if (_formKey.currentState!.validate()) {
                                       FocusScope.of(context).unfocus();
                                       bool success = await Provider.of<AuthProvider>(context, listen: false).login(phoneController.text.trim(), passwordController.text.trim());
                                       if (success && context.mounted) {
                                         Navigator.pushReplacementNamed(context, '/inbox');
                                       } else if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid credentials'), backgroundColor: Colors.redAccent));
+                                        final errorMsg = Provider.of<AuthProvider>(context, listen: false).authError ?? 'Invalid credentials';
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMsg), backgroundColor: Colors.redAccent));
                                       }
                                     }
                                   },
-                                  child: isLoading
+                                  child: isAuthLoading
                                       ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                                       : const Text('Secure Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                 ),

@@ -11,6 +11,8 @@ import 'providers/auth_provider.dart';
 // Layout & Screens
 import 'screens/layout/main_layout.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/auth/forgot_password_screen.dart';
+import 'screens/auth/reset_password_screen.dart';
 import 'screens/auth/set_pin_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/files/inbox_screen.dart';
@@ -99,6 +101,11 @@ class EOfficeApp extends StatelessWidget {
       // 🟢 Do NOT use initialRoute here. Just define the named routes.
       routes: {
         '/login': (context) => LoginScreen(),
+        '/auth/forgot-password': (context) => const ForgotPasswordScreen(),
+        '/auth/reset-password': (context) {
+          final phoneNumber = ModalRoute.of(context)!.settings.arguments as String;
+          return ResetPasswordScreen(phoneNumber: phoneNumber);
+        },
         '/dashboard': (context) => DashboardScreen(),
         '/inbox': (context) => MainLayout(title: 'Inbox', currentRoute: '/inbox', child: InboxScreen()),
         '/files/drafts': (context) => const MainLayout(title: 'Drafts', currentRoute: '/files/drafts', child: DraftsScreen()),

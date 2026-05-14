@@ -11,7 +11,9 @@ class AuthProvider extends ChangeNotifier {
 
   bool _isAuthenticated = false;
   Map<String, dynamic>? _user;
-  bool _isLoading = true;
+  bool _isInitialLoading = true;
+  bool _isAuthLoading = false;
+  String? _authError;
 
   AuthProvider({required this.apiClient, required this.secureStorage}) {
     // 🟢 Setup global 401 Unauthorized handler
@@ -22,7 +24,9 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isAuthenticated => _isAuthenticated;
   Map<String, dynamic>? get user => _user;
-  bool get isLoading => _isLoading;
+  bool get isLoading => _isInitialLoading; // Still used by main.dart for splash
+  bool get isAuthLoading => _isAuthLoading; // New for login button
+  String? get authError => _authError;
 
   // Run on app startup to check if user is already logged in
   Future<void> _checkAuthStatus() async {
@@ -51,7 +55,7 @@ class AuthProvider extends ChangeNotifier {
       }
     }
 
-    _isLoading = false;
+    _isInitialLoading = false;
     notifyListeners();
   }
   void updatePinStatus(bool status) {
@@ -68,7 +72,8 @@ class AuthProvider extends ChangeNotifier {
   // Login function matching your React onSubmit
 // Update your login function in auth_provider.dart
   Future<bool> login(String phoneNumber, String password) async {
-    _isLoading = true;
+    _isAuthLoading = true;
+    _authError = null; // Clear previous errors
     notifyListeners();
 
     try {
@@ -78,25 +83,30 @@ class AuthProvider extends ChangeNotifier {
       });
 
       if (response.statusCode == 200) {
-        // Updated to match the new backend JSON structure
         final token = response.data['token'];
         await secureStorage.write(key: 'jwt_token', value: token);
 
         _user = response.data['data']['user'];
         _isAuthenticated = true;
-        _isLoading = false;
+        _isAuthLoading = false;
         notifyListeners();
         return true;
       }
     } on DioException catch (e) {
-      // 🟢 Safely print the exact error coming from your backend (like Joi validation errors)
-      final errorMessage = e.response?.data['message'] ?? e.response?.data ?? e.message;
-      print('Login Error from Backend: $errorMessage');
+      if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
+        _authError = "Server is taking too long to respond. Please check your connection.";
+      } else if (e.type == DioExceptionType.connectionError) {
+        _authError = "Cannot connect to server. Please check if the server is running.";
+      } else {
+        _authError = e.response?.data['message'] ?? e.response?.data?.toString() ?? e.message ?? "Authentication failed";
+      }
+      print('Login Error: $_authError');
     } catch (e) {
+      _authError = "An unexpected error occurred. Please try again.";
       print('Unexpected App Error: $e');
     }
 
-    _isLoading = false;
+    _isAuthLoading = false;
     notifyListeners();
     return false;
   }
@@ -155,4 +165,88 @@ class AuthProvider extends ChangeNotifier {
       };
     }
   }
-}
+
+  Future<Map<String, dynamic>> forgotPassword(String phoneNumber) async {
+    _isAuthLoading = true;
+    _authError = null;
+    notifyListeners();
+
+    try {
+      final response = await apiClient.forgotPassword({
+        'phoneNumber': phoneNumber,
+      });
+
+      _isAuthLoading = false;
+      notifyListeners();
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'OTP sent successfully',
+        };
+      }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'Failed to request OTP',
+      };
+    } on DioException catch (e) {
+      _isAuthLoading = false;
+      notifyListeners();
+      final errorMessage = e.response?.data['message'] ?? e.message;
+      return {
+        'success': false,
+        'message': errorMessage,
+      };
+    } catch (e) {
+      _isAuthLoading = false;
+      notifyListeners();
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> resetPassword(String phoneNumber, String otp, String newPassword) async {
+    _isAuthLoading = true;
+    _authError = null;
+    notifyListeners();
+
+    try {
+      final response = await apiClient.resetPassword({
+        'phoneNumber': phoneNumber,
+        'otp': otp,
+        'newPassword': newPassword,
+      });
+
+      _isAuthLoading = false;
+      notifyListeners();
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Password reset successfully',
+        };
+      }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'Failed to reset password',
+      };
+    } on DioException catch (e) {
+      _isAuthLoading = false;
+      notifyListeners();
+      final errorMessage = e.response?.data['message'] ?? e.message;
+      return {
+        'success': false,
+        'message': errorMessage,
+      };
+    } catch (e) {
+      _isAuthLoading = false;
+      notifyListeners();
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+      };
+    }
+  }
+}
