@@ -99,7 +99,7 @@ class _CreateEditUserScreenState extends State<CreateEditUserScreen> {
         // --- PATCH (UPDATE USER) ---
         final Map<String, dynamic> data = {
           "fullName": _fullName,
-          "email": _email.isNotEmpty ? _email : null,
+          "email": _email.trim().isNotEmpty ? _email.trim() : null,
           "systemRole": _systemRole,
           "designationId": _designationId,
           "departmentId": _departmentId,
@@ -112,15 +112,18 @@ class _CreateEditUserScreenState extends State<CreateEditUserScreen> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User updated successfully!'), backgroundColor: AppColors.green600));
       } else {
         // --- POST (CREATE USER) ---
-        final formData = FormData.fromMap({
+        final Map<String, dynamic> createData = {
           "fullName": _fullName,
           "phoneNumber": _phoneNumber,
-          "email": _email,
           "password": _password,
           "systemRole": _systemRole,
           "designationId": _designationId,
           "departmentId": _departmentId,
-        });
+        };
+        if (_email.trim().isNotEmpty) {
+          createData["email"] = _email.trim();
+        }
+        final formData = FormData.fromMap(createData);
 
         if (_signatureFile != null && _signatureFile!.path != null) {
           formData.files.add(MapEntry(
